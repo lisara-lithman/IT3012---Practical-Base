@@ -86,7 +86,13 @@ class VisualGridHuntGame:
             'hit_wall': tuple(self.agent_pos) in self.walls,
             'collision': self.collision,
             'score': self.score,
-            'remaining_food': len(self.food_positions)
+            'remaining_food': len(self.food_positions),
+            'grid_size': (self.width, self.height),
+            'walls': list(self.walls),
+            'all_food': list(self.food_positions)
+
+            
+
         }
 
 
@@ -351,16 +357,16 @@ class GridGameGUI:
     def run_loop(self):
 
         self.btn.config(state="disabled")
-
+        
+        from agent import SearchAgent
+        my_agent = SearchAgent()
 
         def step():
 
             if not self.env.is_done():
 
-                action=random.choice(
-                    ['Up','Down','Left','Right']
-                )
-
+                percept = self.env.get_percept()
+                action = my_agent.sense_and_act(percept)
 
                 self.env.execute_action(action)
 
