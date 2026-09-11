@@ -1,4 +1,5 @@
 import random
+from logic_engine import KnowledgeBase
 from collections import deque
 import heapq
 
@@ -20,6 +21,21 @@ class SearchAgent:
     def __init__(self):
         self.plan = []
         self.active_algo = 'BFS'
+        
+        # Instantiate the Knowledge Base for the search agent
+        self.kb = KnowledgeBase()
+        
+        # Rule 1: TargetVisible ∧ HasDust ⇒ SafeToEngage
+        self.kb.tell_rule(
+            ["TargetVisible", "HasDust"], 
+            "SafeToEngage"
+        )
+        
+        # Rule 2: SafeToEngage ∧ BloodseekerMissing ⇒ Retreat
+        self.kb.tell_rule(
+            ["SafeToEngage", "BloodseekerMissing"], 
+            "Retreat"
+        )
 
     def sense_and_act(self, percept: dict) -> str:
         if not self.plan:
@@ -173,6 +189,22 @@ class SearchAgent:
                     neighbor not in walls and
                     neighbor not in reached):
 
+                    # Step 3.2: Consult the Knowledge Base
+                    if hasattr(self, 'kb'):
+                        self.kb.clear_facts()
+                        
+                        # Feed the current percepts for that specific tile into the KB
+                        # (Using a helper method to represent fetching percepts for the tile)
+                        current_percepts = self.get_tile_percepts(neighbor)
+                        for fact in current_percepts:
+                            self.kb.tell_fact(fact)
+                            
+                        self.kb.forward_chain()
+                        
+                        # If 'Retreat' is deduced, mark the tile as Infeasible and skip it
+                        if "Retreat" in self.kb.facts:
+                            continue
+
                     g_new = g_cost + 1
 
                     if heuristic_type == "manhattan":
@@ -189,17 +221,28 @@ class SearchAgent:
 
         return []
 
-            
+    def get_tile_percepts(self, tile_pos):
+        # Mock method to simulate getting percepts for a specific tile.
+        return []
 
 
-
-        
-
-        
-
-
-        
-
-
+class LogicalAgent:
     
+    def __init__(self):
+        # Instantiate the Knowledge Base
+        self.kb = KnowledgeBase()
         
+        # Rule 1: TargetVisible ∧ HasDust ⇒ SafeToEngage
+        self.kb.tell_rule(
+            ["TargetVisible", "HasDust"], 
+            "SafeToEngage"
+        )
+        
+        # Rule 2: SafeToEngage ∧ BloodseekerMissing ⇒ Retreat
+        self.kb.tell_rule(
+            ["SafeToEngage", "BloodseekerMissing"], 
+            "Retreat"
+        )
+        
+    def sense_and_act(self, percept: dict) -> str:
+        pass
